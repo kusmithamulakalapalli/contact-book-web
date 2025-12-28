@@ -1,346 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Hub - Advanced Contact Manager</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); color: #333; overflow-x: hidden; }
-        
-        /* PPT-Style Creative Popup */
-        #contactHubPopup {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); 
-            display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; visibility: hidden;
-            animation: popupFadeIn 1s ease 0.5s forwards;
-        }
-        .popup-content {
-            text-align: center; background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); 
-            padding: 4rem 3rem; border-radius: 30px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
-            transform: scale(0.3) rotate(-180deg); animation: popSwirl 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
-        }
-        .popup-title { font-size: clamp(3rem, 8vw, 6rem); background: linear-gradient(45deg, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; text-shadow: 0 0 30px rgba(255,255,255,0.5); letter-spacing: 0.1em; }
-        .popup-subtitle { color: #fff; font-size: 1.5rem; margin-top: 1rem; opacity: 0; animation: fadeInUp 0.8s 2s forwards; }
-        .close-popup { position: absolute; top: 20px; right: 30px; background: none; border: none; font-size: 2rem; color: #fff; cursor: pointer; opacity: 0; animation: fadeIn 0.5s 2.5s forwards; }
-        
-        @keyframes popupFadeIn { to { opacity: 1; visibility: visible; } }
-        @keyframes popSwirl {
-            0% { transform: scale(0.3) rotate(-180deg); opacity: 0; }
-            60% { transform: scale(1.1) rotate(20deg); opacity: 0.8; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        /* Login Page */
-        #loginPage { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
-        .login-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); padding: 3rem; border-radius: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); text-align: center; max-width: 400px; width: 100%; transform: scale(0.9); opacity: 0; animation: slideUp 1s 3s forwards; }
-        @keyframes slideUp { to { transform: scale(1); opacity: 1; } }
-        .login-card h2 { color: #2c5364; margin-bottom: 2rem; font-size: 2.5rem; }
-        input { width: 100%; padding: 1rem; margin: 1rem 0; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 1.1rem; transition: all 0.3s; }
-        input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 20px rgba(102,126,234,0.3); }
-        .btn { background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-size: 1.1rem; cursor: pointer; transition: transform 0.3s; margin-top: 1rem; width: 100%; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102,126,234,0.4); }
-        
-        /* Main App */
-        #mainApp { display: none; min-height: 100vh; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .nav { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; padding: 1rem; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
-        .nav-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 20px; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; }
-        .nav-btn.active, .nav-btn:hover { background: rgba(255,255,255,0.4); transform: translateY(-2px); }
-        
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
-        .section { display: none; }
-        .section.active { display: block; animation: fadeInSection 0.5s; }
-        @keyframes fadeInSection { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .search-bar { width: 100%; padding: 1rem; margin-bottom: 1rem; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 1.1rem; background: white; }
-        .voice-btn { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: #667eea; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; }
-        .contacts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
-        .contact-card { background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s; position: relative; overflow: hidden; }
-        .contact-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .contact-photo { width: 60px; height: 60px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
-        .contact-name { font-size: 1.4rem; font-weight: bold; color: #2c5364; margin-bottom: 0.5rem; }
-        .contact-phone { color: #666; font-size: 1.1rem; margin-bottom: 1rem; }
-        .contact-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
-        .action-btn { padding: 0.5rem 1rem; border: none; border-radius: 10px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
-        .call-btn { background: #4CAF50; color: white; }
-        .sms-btn { background: #2196F3; color: white; }
-        .edit-btn { background: #FF9800; color: white; }
-        .delete-btn { background: #f44336; color: white; }
-        .favorite-btn { background: #FFD700; color: #333; }
-        .contact-card.favorite .favorite-btn { background: #FF6B6B; }
-        .stats { background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 15px; margin: 1rem 0; }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; color: #555; }
-        .form-row { display: flex; gap: 1rem; }
-        .form-row input { flex: 1; }
-        #map { height: 300px; border-radius: 15px; margin: 1rem 0; background: #e0e0e0; display: none; }
-        .group-selector { margin-bottom: 1rem; }
-        select { padding: 0.8rem; border-radius: 10px; border: 2px solid #e0e0e0; font-size: 1rem; }
-        .trash-bin { background: #ffebee; padding: 1.5rem; border-radius: 15px; margin-top: 1rem; }
-        .reminder { background: #e8f5e8; padding: 0.8rem; border-radius: 10px; margin: 0.5rem 0; font-size: 0.9rem; }
-        .security-note { background: #fff3e0; padding: 1rem; border-radius: 10px; text-align: center; margin: 1rem 0; color: #e65100; }
-        
-        /* Responsive */
-        @media (max-width: 768px) { .nav { flex-direction: column; align-items: center; } .form-row { flex-direction: column; } .contacts-grid { grid-template-columns: 1fr; } }
-        
-        /* Hide sections initially */
-        .hidden { display: none !important; }
-    </style>
+<meta charset="UTF-8">
+<title>Contact Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ---------- GLOBAL ---------- */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color: white;
+}
+
+/* ---------- POPUP ---------- */
+#popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.popup-box {
+    text-align: center;
+    padding: 40px;
+    border-radius: 20px;
+    background: linear-gradient(135deg,#00c6ff,#0072ff);
+    box-shadow: 0 0 40px cyan;
+    animation: zoom 1.2s ease;
+}
+
+@keyframes zoom {
+    from {transform: scale(0);}
+    to {transform: scale(1);}
+}
+
+.popup-box h1 {
+    font-size: 3.5em;
+    margin: 0;
+    letter-spacing: 5px;
+}
+
+.popup-box p {
+    font-size: 1.2em;
+}
+
+.popup-box button {
+    margin-top: 20px;
+    padding: 12px 30px;
+    font-size: 1em;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    background: black;
+    color: cyan;
+}
+
+/* ---------- LOGIN ---------- */
+#login {
+    display: none;
+    text-align: center;
+    padding: 50px;
+}
+
+.login-box {
+    max-width: 350px;
+    margin: auto;
+    background: rgba(255,255,255,0.1);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px black;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    background: cyan;
+    cursor: pointer;
+}
+
+/* ---------- DASHBOARD ---------- */
+#app {
+    display: none;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h2 {
+    color: cyan;
+}
+
+#clock {
+    font-size: 0.9em;
+}
+
+/* ---------- CONTACT FORM ---------- */
+.form {
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.form input, .form select {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 8px;
+    border: none;
+}
+
+/* ---------- CONTACT LIST ---------- */
+.contact {
+    background: rgba(255,255,255,0.15);
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+.contact button {
+    margin: 3px;
+    border: none;
+    border-radius: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+/* ---------- FOOTER ---------- */
+footer {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+</style>
 </head>
+
 <body>
-    <!-- PPT-Style Popup -->
-    <div id="contactHubPopup">
-        <button class="close-popup" onclick="closePopup()"><i class="fas fa-times"></i></button>
-        <div class="popup-content">
-            <div class="popup-title">CONTACT HUB</div>
-            <div class="popup-subtitle">Your Ultimate Contact Manager</div>
-        </div>
+
+<!-- POPUP -->
+<div id="popup">
+    <div class="popup-box">
+        <h1>CONTACT HUB</h1>
+        <p>Your Smart Contact Management System</p>
+        <button onclick="startApp()">Enter</button>
+    </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login">
+    <div class="login-box">
+        <h2>Login</h2>
+        <input type="text" placeholder="Username">
+        <input type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+    <header>
+        <h2>📒 Contact Hub Dashboard</h2>
+        <div id="clock"></div>
+    </header>
+
+    <!-- ADD CONTACT -->
+    <div class="form">
+        <h3>Add Contact</h3>
+        <input id="name" placeholder="Name">
+        <input id="phone" placeholder="Phone">
+        <input id="photo" placeholder="Profile Photo URL">
+        <select id="group">
+            <option>Family</option>
+            <option>Friends</option>
+            <option>College</option>
+            <option>Office</option>
+        </select>
+        <button onclick="addContact()">Add Contact</button>
+        <button onclick="voiceSearch()">🎤 Voice Search</button>
     </div>
 
-    <!-- Login Page -->
-    <div id="loginPage">
-        <div class="login-card">
-            <h2><i class="fas fa-lock"></i> Secure Login</h2>
-            <input type="text" id="username" placeholder="Username" value="admin">
-            <input type="password" id="password" placeholder="Password" value="hub123">
-            <button class="btn" onclick="login()"><i class="fas fa-sign-in-alt"></i> Enter Contact Hub</button>
-            <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">Demo: admin / hub123</p>
-        </div>
+    <!-- CONTACT LIST -->
+    <div id="contacts"></div>
+
+    <!-- SECURITY -->
+    <div class="form">
+        <h3>🔐 Security & Privacy</h3>
+        <p>• Contacts stored locally</p>
+        <p>• No third-party access</p>
+        <p>• User controlled data</p>
     </div>
 
-    <!-- Main App -->
-    <div id="mainApp">
-        <div class="header">
-            <h1><i class="fas fa-address-book"></i> Contact Hub</h1>
-            <p>Advanced Contact Management System</p>
-            <div class="security-note">
-                <i class="fas fa-shield-alt"></i> All data encrypted & stored locally with privacy protection
-            </div>
-        </div>
+    <footer>
+        © Contact Hub | College Mini Project
+    </footer>
+</div>
 
-        <div class="nav">
-            <button class="nav-btn active" onclick="showSection('all-contacts')"><i class="fas fa-users"></i> All Contacts</button>
-            <button class="nav-btn" onclick="showSection('favorites')"><i class="fas fa-star"></i> Favorites</button>
-            <button class="nav-btn" onclick="showSection('groups')"><i class="fas fa-layer-group"></i> Groups</button>
-            <button class="nav-btn" onclick="showSection('call-history')"><i class="fas fa-history"></i> Call History</button>
-            <button class="nav-btn" onclick="showSection('stats')"><i class="fas fa-chart-bar"></i> Statistics</button>
-            <button class="nav-btn" onclick="showSection('trash')"><i class="fas fa-trash-restore"></i> Recycle Bin</button>
-            <button class="nav-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-        </div>
+<script>
+let contacts = [];
 
-        <div class="container">
-            <!-- All Contacts -->
-            <div id="all-contacts" class="section active">
-                <div style="position: relative; margin-bottom: 1rem;">
-                    <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Search contacts...">
-                    <button class="voice-btn" id="voiceBtn" title="Voice Search"><i class="fas fa-microphone"></i></button>
-                </div>
-                <select class="group-selector" id="groupFilter" onchange="filterByGroup()">
-                    <option value="">All Groups</option>
-                    <option value="Class A">Class A</option>
-                    <option value="Class B">Class B</option>
-                    <option value="Family">Family</option>
-                    <option value="Work">Work</option>
-                </select>
-                <button class="btn" onclick="showAddForm()" style="width: auto; padding: 1rem 2rem;"><i class="fas fa-plus"></i> Add Contact</button>
-                <div id="contactsList" class="contacts-grid"></div>
-            </div>
+function startApp(){
+    document.getElementById("popup").style.display="none";
+    document.getElementById("login").style.display="block";
+}
 
-            <!-- Add/Edit Form -->
-            <div id="addFormSection" class="section hidden">
-                <h2 id="formTitle">Add New Contact</h2>
-                <form id="contactForm">
-                    <div class="form-group">
-                        <label>Profile Photo Initial</label>
-                        <input type="text" id="photoInitial" maxlength="2" placeholder="AB">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Name</label>
-                            <input type="text" id="name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Phone</label>
-                            <input type="tel" id="phone" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Group</label>
-                            <select id="group">
-                                <option>Class A</option>
-                                <option>Class B</option>
-                                <option>Family</option>
-                                <option>Work</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Birthday</label>
-                            <input type="date" id="birthday">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Reminder (Follow-up)</label>
-                        <input type="date" id="reminderDate">
-                    </div>
-                    <div style="display: flex; gap: 1rem;">
-                        <button type="submit" class="btn" style="flex: 1;">Save Contact</button>
-                        <button type="button" class="btn" onclick="cancelAdd()" style="background: #666;">Cancel</button>
-                    </div>
-                </form>
-            </div>
+function login(){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="block";
+}
 
-            <!-- Favorites -->
-            <div id="favorites" class="section">
-                <h2>Favorite Contacts</h2>
-                <div id="favoritesList" class="contacts-grid"></div>
-            </div>
+function addContact(){
+    let name = nameInput.value;
+    let phone = phoneInput.value;
+    let photo = photoInput.value;
+    let group = groupInput.value;
 
-            <!-- Groups -->
-            <div id="groups" class="section">
-                <h2>Contacts by Group</h2>
-                <div id="groupsList"></div>
-            </div>
+    contacts.push({name,phone,photo,group});
+    render();
+}
 
-            <!-- Call History -->
-            <div id="call-history" class="section">
-                <h2>Call History</h2>
-                <div id="callHistoryList"></div>
-            </div>
+function render(){
+    contactsDiv.innerHTML="";
+    contacts.forEach((c,i)=>{
+        contactsDiv.innerHTML+=`
+        <div class="contact">
+            <img src="${c.photo}" width="40" style="border-radius:50%">
+            <b>${c.name}</b> (${c.group})<br>
+            📞 ${c.phone}<br>
+            <button onclick="alert('Calling ${c.name}')">Call</button>
+            <button onclick="alert('Messaging ${c.name}')">Msg</button>
+            <button onclick="contacts.splice(${i},1);render()">Delete</button>
+            <button onclick="alert('Added to Favorites')">⭐</button>
+        </div>`;
+    });
+}
 
-            <!-- Statistics -->
-            <div id="stats" class="section">
-                <h2>Call Duration Statistics</h2>
-                <div class="stats">
-                    <p>Total Calls: <span id="totalCalls">0</span> | Avg Duration: <span id="avgDuration">0</span>s | Longest Call: <span id="longestCall">0</span>s</p>
-                </div>
-                <canvas id="callChart" width="400" height="200"></canvas>
-            </div>
+/* VOICE SEARCH */
+function voiceSearch(){
+    let r = new webkitSpeechRecognition();
+    r.onresult = e => alert("You said: " + e.results[0][0].transcript);
+    r.start();
+}
 
-            <!-- Recycle Bin -->
-            <div id="trash" class="section">
-                <h2>Recycle Bin <small>(Restore deleted contacts)</small></h2>
-                <div class="trash-bin" id="trashList"></div>
-            </div>
-        </div>
-    </div>
+/* CLOCK */
+setInterval(()=>{
+    clock.innerHTML=new Date().toLocaleString();
+},1000);
 
-    <script>
-        // Data Storage (Encrypted localStorage)
-        const STORAGE_KEY = 'contactHub_v3_encrypted';
-        const TRASH_KEY = 'contactHub_trash';
-        let contacts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        let trash = JSON.parse(localStorage.getItem(TRASH_KEY) || '[]');
-        let callHistory = JSON.parse(localStorage.getItem('contactHub_calls') || '[]');
-        let editingId = null;
-        let recognition = null;
+/* SHORTCUTS */
+const nameInput=document.getElementById("name");
+const phoneInput=document.getElementById("phone");
+const photoInput=document.getElementById("photo");
+const groupInput=document.getElementById("group");
+const contactsDiv=document.getElementById("contacts");
+</script>
 
-        // Initialize Speech Recognition for Voice Search [web:43][web:47]
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript.toLowerCase();
-                document.getElementById('searchInput').value = transcript;
-                searchContacts();
-            };
-        }
-
-        // Save to Encrypted localStorage [web:40]
-        function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));
-            localStorage.setItem('contactHub_calls', JSON.stringify(callHistory));
-            localStorage.setItem(TRASH_KEY, JSON.stringify(trash));
-        }
-
-        // Login
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            if (username === 'admin' && password === 'hub123') {
-                document.getElementById('loginPage').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                loadAllData();
-            } else {
-                alert('Invalid credentials! Use: admin / hub123');
-            }
-        }
-
-        function logout() {
-            document.getElementById('mainApp').style.display = 'none';
-            document.getElementById('loginPage').style.display = 'flex';
-        }
-
-        // Close PPT Popup after 4s or click [web:19]
-        function closePopup() {
-            document.getElementById('contactHubPopup').style.animation = 'fadeIn 0.5s reverse forwards';
-            setTimeout(() => {
-                document.getElementById('contactHubPopup').style.display = 'none';
-            }, 500);
-        }
-        setTimeout(closePopup, 4000);
-
-        // Navigation
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active', 'hidden'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            event.target.classList.add('active');
-            
-            if (sectionId === 'all-contacts') renderContacts();
-            else if (sectionId === 'favorites') renderFavorites();
-            else if (sectionId === 'groups') renderGroups();
-            else if (sectionId === 'call-history') renderCallHistory();
-            else if (sectionId === 'stats') renderStats();
-            else if (sectionId === 'trash') renderTrash();
-        }
-
-        // Render Contacts [memory:4]
-        function renderContacts(filter = '') {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const group = document.getElementById('groupFilter').value;
-            let filtered = contacts.filter(c => 
-                c.name.toLowerCase().includes(search) && 
-                (!group || c.group === group)
-            );
-            
-            const list = document.getElementById('contactsList');
-            list.innerHTML = filtered.map(c => `
-                <div class="contact-card ${c.favorite ? 'favorite' : ''}" data-id="${c.id}">
-                    <div class="contact-photo">${c.photoInitial}</div>
-                    <div class="contact-name">${c.name}</div>
-                    <div class="contact-phone">${c.phone}</div>
-                    ${c.birthday ? `<div class="reminder">🎂 Birthday: ${c.birthday}</div>` : ''}
-                    ${c.reminderDate ? `<div class="reminder">📅 Follow-up: ${c.reminderDate}</div>` : ''}
-                    ${c.location ? `<div>📍 Last seen</div>` : ''}
-                    <div class="contact-actions">
-                        <button class="action-btn call-btn" onclick="simulateCall('${c.phone}', '${c.name}', ${c.id})">
-                            <i class="fas fa-phone"></i> Call
-                        </button>
-                        <button class="action-btn sms-btn" onclick="simulateSMS('${c.phone}')">
-                            <i class="fas fa-sms"></i> SMS
-                        </button>
-                        <button class="action-btn ${c.favorite ? 'favorite-btn' : ''}" onclick="toggleFavorite('${c.id}')">
-                            <i class="fas fa-star ${c.favorite ? 'fas' : 'far'}"></i>
-                        </button>
-                        <button class="action-btn edit-btn" onclick="editContact('${c.id}')">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete-btn" onclick="deleteContact('${c.id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                        <button class="action-btn" onclick="trackLocation('${c.id}')" style="background: #9C27B0; color: white;">
-                            <i class="fas fa-map-marker-alt"></i> Locate
-                        </button>
-
-                    </div>
-                </div>
-
-            `).join('');
-        }
+</body>
+</html>
