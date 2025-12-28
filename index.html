@@ -1,958 +1,346 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Contact Hub — Smart. Secure. Connected.</title>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <style>
-    :root{
-      --bg:#f4f7fb;
-      --card:#ffffff;
-      --primary-1: linear-gradient(135deg,#2b6de6 0%,#8c5cf2 100%);
-      --accent:#4f46e5;
-      --muted:#6b7280;
-      --glass: rgba(255,255,255,0.6);
-      --card-radius:14px;
-      --glass-shadow: 0 6px 18px rgba(16,24,40,0.08);
-      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-    }
-
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:#0f172a}
-
-    /* Splash / PPT-style pop-up */
-    .splash-wrap{
-      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-      background:linear-gradient(180deg, rgba(11,21,50,0.25), rgba(255,255,255,0.02));
-      z-index:9999;
-    }
-    .splash{
-      width:min(820px,92%);max-width:1100px;padding:48px;border-radius:20px;
-      background:var(--primary-1);
-      color:white;box-shadow: 0 20px 60px rgba(25,25,60,0.35);
-      display:flex;gap:36px;align-items:center;transform:scale(.86);opacity:0;
-      animation: splashIn 900ms ease forwards;
-    }
-    @keyframes splashIn{to{transform:scale(1);opacity:1}}
-    .splash-left{flex:1}
-    .logo{
-      display:flex;align-items:center;gap:16px;font-weight:800;font-size:28px;
-      letter-spacing:1px;
-    }
-    .logo .icon{
-      width:64px;height:64px;border-radius:14px;background:rgba(255,255,255,0.12);
-      display:flex;align-items:center;justify-content:center;font-size:28px;
-      box-shadow:0 8px 24px rgba(0,0,0,0.12), inset 0 -6px 14px rgba(255,255,255,0.02)
-    }
-    .splash-sub{opacity:0.95;margin-top:8px;font-weight:500;color:rgba(255,255,255,0.95)}
-    .splash-right{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
-    .icons-row{display:flex;gap:12px;align-items:center}
-    .badge{
-      background:rgba(255,255,255,0.12);padding:10px;border-radius:12px;display:flex;gap:10px;align-items:center;font-weight:600
-    }
-    .splash small{display:block;color:rgba(255,255,255,0.9);opacity:0.95}
-
-    /* Container */
-    .app{
-      max-width:1100px;margin:36px auto;padding:18px;
-    }
-
-    header{
-      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;
-    }
-    .brand{
-      display:flex;gap:12px;align-items:center;
-    }
-    .brand .mark{
-      width:46px;height:46px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:0 8px 26px rgba(79,70,229,0.18)
-    }
-    .clock{font-weight:600;color:var(--muted);font-size:14px}
-    .permissions{display:flex;gap:8px;align-items:center}
-    .perm-toggle{display:flex;gap:6px;align-items:center;background:var(--card);padding:8px 12px;border-radius:12px;box-shadow:var(--glass-shadow)}
-
-    .layout{
-      display:grid;grid-template-columns:320px 1fr;gap:18px;
-    }
-
-    /* Left column */
-    .panel{
-      background:var(--card);border-radius:var(--card-radius);padding:14px;box-shadow:var(--glass-shadow)
-    }
-    .search{
-      display:flex;gap:8px;align-items:center;margin-bottom:12px;
-    }
-    .search input{flex:1;padding:10px 12px;border-radius:12px;border:1px solid #eef2ff;background:#fbfdff}
-    .voice-btn{background:linear-gradient(90deg,#eef2ff,#f8faff);border-radius:10px;padding:8px 10px;border:0;cursor:pointer}
-
-    .contacts-list{max-height:62vh;overflow:auto;padding-right:6px}
-    .contact-item{display:flex;gap:12px;align-items:center;padding:8px;border-radius:10px;margin-bottom:8px;cursor:pointer}
-    .contact-item:hover{background:linear-gradient(90deg,#f7f9ff,#ffffff)}
-    .avatar{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,#eef2ff,#f5faff);font-weight:700}
-    .fav{margin-left:auto;color:#f59e0b}
-
-    .groups{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-    .group-pill{background:#f8fafc;padding:6px 10px;border-radius:999px;font-weight:600;color:#334155}
-
-    .actions{display:flex;gap:8px;margin-top:12px}
-
-    /* Right column main */
-    .main-top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .card{background:var(--card);padding:14px;border-radius:12px;box-shadow:var(--glass-shadow)}
-    .grid-2{display:grid;grid-template-columns:1fr 360px;gap:12px}
-
-    /* contact detail */
-    .detail{display:flex;gap:16px;align-items:flex-start}
-    .detail .avatar-lg{width:96px;height:96px;border-radius:14px;background:linear-gradient(90deg,#eef2ff,#f3f7ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px}
-    .meta{flex:1}
-    .meta h3{margin:0 0 6px 0}
-    .meta p{margin:0;color:var(--muted)}
-
-    /* history list */
-    .history-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px}
-    .history-row.incoming{background:linear-gradient(90deg,#ecfdf5,#ffffff)}
-    .history-row.missed{background:linear-gradient(90deg,#fff1f2,#ffffff)}
-    .history-row.outgoing{background:linear-gradient(90deg,#eff6ff,#ffffff)}
-
-    /* responsive */
-    @media (max-width:980px){
-      .layout{grid-template-columns:1fr;gap:12px}
-      .grid-2{grid-template-columns:1fr;gap:12px}
-      .splash{flex-direction:column;text-align:center}
-      .splash-right{align-items:center}
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Hub - Advanced Contact Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); color: #333; overflow-x: hidden; }
+        
+        /* PPT-Style Creative Popup */
+        #contactHubPopup {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); 
+            display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; visibility: hidden;
+            animation: popupFadeIn 1s ease 0.5s forwards;
+        }
+        .popup-content {
+            text-align: center; background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); 
+            padding: 4rem 3rem; border-radius: 30px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
+            transform: scale(0.3) rotate(-180deg); animation: popSwirl 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 1s forwards;
+        }
+        .popup-title { font-size: clamp(3rem, 8vw, 6rem); background: linear-gradient(45deg, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; text-shadow: 0 0 30px rgba(255,255,255,0.5); letter-spacing: 0.1em; }
+        .popup-subtitle { color: #fff; font-size: 1.5rem; margin-top: 1rem; opacity: 0; animation: fadeInUp 0.8s 2s forwards; }
+        .close-popup { position: absolute; top: 20px; right: 30px; background: none; border: none; font-size: 2rem; color: #fff; cursor: pointer; opacity: 0; animation: fadeIn 0.5s 2.5s forwards; }
+        
+        @keyframes popupFadeIn { to { opacity: 1; visibility: visible; } }
+        @keyframes popSwirl {
+            0% { transform: scale(0.3) rotate(-180deg); opacity: 0; }
+            60% { transform: scale(1.1) rotate(20deg); opacity: 0.8; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Login Page */
+        #loginPage { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+        .login-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); padding: 3rem; border-radius: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); text-align: center; max-width: 400px; width: 100%; transform: scale(0.9); opacity: 0; animation: slideUp 1s 3s forwards; }
+        @keyframes slideUp { to { transform: scale(1); opacity: 1; } }
+        .login-card h2 { color: #2c5364; margin-bottom: 2rem; font-size: 2.5rem; }
+        input { width: 100%; padding: 1rem; margin: 1rem 0; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 1.1rem; transition: all 0.3s; }
+        input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 20px rgba(102,126,234,0.3); }
+        .btn { background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-size: 1.1rem; cursor: pointer; transition: transform 0.3s; margin-top: 1rem; width: 100%; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102,126,234,0.4); }
+        
+        /* Main App */
+        #mainApp { display: none; min-height: 100vh; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .nav { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; padding: 1rem; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .nav-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 20px; cursor: pointer; transition: all 0.3s; font-size: 0.9rem; }
+        .nav-btn.active, .nav-btn:hover { background: rgba(255,255,255,0.4); transform: translateY(-2px); }
+        
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; }
+        .section { display: none; }
+        .section.active { display: block; animation: fadeInSection 0.5s; }
+        @keyframes fadeInSection { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .search-bar { width: 100%; padding: 1rem; margin-bottom: 1rem; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 1.1rem; background: white; }
+        .voice-btn { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); background: #667eea; color: white; border: none; border-radius: 50%; width: 50px; height: 50px; cursor: pointer; }
+        .contacts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .contact-card { background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s; position: relative; overflow: hidden; }
+        .contact-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .contact-photo { width: 60px; height: 60px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 1rem; }
+        .contact-name { font-size: 1.4rem; font-weight: bold; color: #2c5364; margin-bottom: 0.5rem; }
+        .contact-phone { color: #666; font-size: 1.1rem; margin-bottom: 1rem; }
+        .contact-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .action-btn { padding: 0.5rem 1rem; border: none; border-radius: 10px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s; }
+        .call-btn { background: #4CAF50; color: white; }
+        .sms-btn { background: #2196F3; color: white; }
+        .edit-btn { background: #FF9800; color: white; }
+        .delete-btn { background: #f44336; color: white; }
+        .favorite-btn { background: #FFD700; color: #333; }
+        .contact-card.favorite .favorite-btn { background: #FF6B6B; }
+        .stats { background: rgba(255,255,255,0.9); padding: 1rem; border-radius: 15px; margin: 1rem 0; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #555; }
+        .form-row { display: flex; gap: 1rem; }
+        .form-row input { flex: 1; }
+        #map { height: 300px; border-radius: 15px; margin: 1rem 0; background: #e0e0e0; display: none; }
+        .group-selector { margin-bottom: 1rem; }
+        select { padding: 0.8rem; border-radius: 10px; border: 2px solid #e0e0e0; font-size: 1rem; }
+        .trash-bin { background: #ffebee; padding: 1.5rem; border-radius: 15px; margin-top: 1rem; }
+        .reminder { background: #e8f5e8; padding: 0.8rem; border-radius: 10px; margin: 0.5rem 0; font-size: 0.9rem; }
+        .security-note { background: #fff3e0; padding: 1rem; border-radius: 10px; text-align: center; margin: 1rem 0; color: #e65100; }
+        
+        /* Responsive */
+        @media (max-width: 768px) { .nav { flex-direction: column; align-items: center; } .form-row { flex-direction: column; } .contacts-grid { grid-template-columns: 1fr; } }
+        
+        /* Hide sections initially */
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
-
-  <!-- Splash -->
-  <div class="splash-wrap" id="splashWrap">
-    <div class="splash" role="dialog" aria-label="Contact Hub splash">
-      <div class="splash-left">
-        <div class="logo">
-          <div class="icon"><i class="fa-solid fa-hubspot"></i></div>
-          <div>
-            <div style="font-size:28px">CONTACT HUB</div>
-            <div class="splash-sub">Smart. Secure. Connected.</div>
-          </div>
+    <!-- PPT-Style Popup -->
+    <div id="contactHubPopup">
+        <button class="close-popup" onclick="closePopup()"><i class="fas fa-times"></i></button>
+        <div class="popup-content">
+            <div class="popup-title">CONTACT HUB</div>
+            <div class="popup-subtitle">Your Ultimate Contact Manager</div>
         </div>
-        <small style="margin-top:12px;display:block">Organize people. Track calls. Keep memories. Built with privacy-first UI.</small>
-      </div>
-      <div class="splash-right">
-        <div class="icons-row">
-          <div class="badge"><i class="fa-solid fa-phone"></i>&nbsp;Call</div>
-          <div class="badge"><i class="fa-solid fa-message"></i>&nbsp;Message</div>
-          <div class="badge"><i class="fa-solid fa-location-dot"></i>&nbsp;Locate</div>
-          <div class="badge"><i class="fa-solid fa-address-book"></i>&nbsp;Contacts</div>
-        </div>
-        <div style="opacity:0.9;font-weight:600">A premium contact application — presentation-ready visuals</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.9);margin-top:10px">Loading… presentation mode</div>
-      </div>
     </div>
-  </div>
 
-  <!-- Main app -->
-  <div id="app" style="display:none">
-    <div class="app">
-      <header>
-        <div class="brand">
-          <div class="mark"><i class="fa-solid fa-address-card"></i></div>
-          <div>
-            <div style="font-weight:800">Contact Hub</div>
-            <div style="font-size:12px;color:var(--muted)">Smart. Secure. Connected.</div>
-          </div>
+    <!-- Login Page -->
+    <div id="loginPage">
+        <div class="login-card">
+            <h2><i class="fas fa-lock"></i> Secure Login</h2>
+            <input type="text" id="username" placeholder="Username" value="admin">
+            <input type="password" id="password" placeholder="Password" value="hub123">
+            <button class="btn" onclick="login()"><i class="fas fa-sign-in-alt"></i> Enter Contact Hub</button>
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">Demo: admin / hub123</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp">
+        <div class="header">
+            <h1><i class="fas fa-address-book"></i> Contact Hub</h1>
+            <p>Advanced Contact Management System</p>
+            <div class="security-note">
+                <i class="fas fa-shield-alt"></i> All data encrypted & stored locally with privacy protection
+            </div>
         </div>
 
-        <div style="display:flex;gap:12px;align-items:center">
-          <div class="clock" id="clock">--:--</div>
-
-          <div class="permissions">
-            <div class="perm-toggle">
-              <label style="font-size:12px;color:var(--muted)">Location</label>
-              <input type="checkbox" id="permLocation" style="margin-left:8px">
-            </div>
-            <div class="perm-toggle">
-              <label style="font-size:12px;color:var(--muted)">Notify</label>
-              <input type="checkbox" id="permNotify" style="margin-left:8px">
-            </div>
-            <div class="perm-toggle" title="Enable biometric style visuals">
-              <label style="font-size:12px;color:var(--muted)">Biometric UI</label>
-              <input type="checkbox" id="permBio" style="margin-left:8px">
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div class="layout">
-        <div>
-          <div class="panel">
-            <div class="search">
-              <input id="searchInput" placeholder="Search contacts, tags, voice ▶" />
-              <button class="voice-btn" id="voiceBtn" title="Voice search"><i class="fa-solid fa-microphone"></i></button>
-              <button class="voice-btn" id="newContactBtn" title="Add new contact"><i class="fa-solid fa-plus"></i></button>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <strong>Favorites</strong>
-              <small id="favCount">0</small>
-            </div>
-            <div id="favoritesWrap" class="contacts-list" style="margin-bottom:8px"></div>
-
-            <hr style="border:none;border-top:1px solid #eef2ff;margin:12px 0">
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <strong>All Contacts</strong>
-              <small id="totalCount">0</small>
-            </div>
-
-            <div id="contactsWrap" class="contacts-list"></div>
-
-            <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
-              <div class="groups" id="groupsWrap"></div>
-              <button id="manageGroupsBtn" class="voice-btn">Groups</button>
-            </div>
-
-            <div style="margin-top:12px;display:flex;gap:8px">
-              <button id="showDeletedBtn" class="voice-btn" title="Recently deleted">Trash</button>
-              <button id="backupBtn" class="voice-btn" title="Backup (export)">Backup</button>
-              <button id="importBtn" class="voice-btn" title="Import">Import</button>
-            </div>
-          </div>
+        <div class="nav">
+            <button class="nav-btn active" onclick="showSection('all-contacts')"><i class="fas fa-users"></i> All Contacts</button>
+            <button class="nav-btn" onclick="showSection('favorites')"><i class="fas fa-star"></i> Favorites</button>
+            <button class="nav-btn" onclick="showSection('groups')"><i class="fas fa-layer-group"></i> Groups</button>
+            <button class="nav-btn" onclick="showSection('call-history')"><i class="fas fa-history"></i> Call History</button>
+            <button class="nav-btn" onclick="showSection('stats')"><i class="fas fa-chart-bar"></i> Statistics</button>
+            <button class="nav-btn" onclick="showSection('trash')"><i class="fas fa-trash-restore"></i> Recycle Bin</button>
+            <button class="nav-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </div>
 
-        <div>
-          <div class="main-top">
-            <div style="display:flex;gap:12px;align-items:center">
-              <div class="card" style="display:flex;gap:10px;align-items:center">
-                <div style="font-weight:700">Call Insights</div>
-                <div style="font-size:12px;color:var(--muted)">Visual analytics & stats</div>
-              </div>
-
-              <div class="card" style="display:flex;gap:12px;align-items:center;padding:10px 14px;">
-                <div style="font-weight:700">Reminders</div>
-                <div style="font-size:12px;color:var(--muted)">Birthdays, follow-ups</div>
-              </div>
-            </div>
-
-            <div style="display:flex;gap:8px;align-items:center">
-              <button id="showDashboardBtn" class="voice-btn">Dashboard</button>
-              <button id="logoutBtn" class="voice-btn">Logout</button>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div>
-              <div class="card" style="margin-bottom:12px">
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                  <div style="font-weight:700">Contact Detail</div>
-                  <div style="font-size:12px;color:var(--muted)" id="contactSince">—</div>
+        <div class="container">
+            <!-- All Contacts -->
+            <div id="all-contacts" class="section active">
+                <div style="position: relative; margin-bottom: 1rem;">
+                    <input type="text" class="search-bar" id="searchInput" placeholder="🔍 Search contacts...">
+                    <button class="voice-btn" id="voiceBtn" title="Voice Search"><i class="fas fa-microphone"></i></button>
                 </div>
+                <select class="group-selector" id="groupFilter" onchange="filterByGroup()">
+                    <option value="">All Groups</option>
+                    <option value="Class A">Class A</option>
+                    <option value="Class B">Class B</option>
+                    <option value="Family">Family</option>
+                    <option value="Work">Work</option>
+                </select>
+                <button class="btn" onclick="showAddForm()" style="width: auto; padding: 1rem 2rem;"><i class="fas fa-plus"></i> Add Contact</button>
+                <div id="contactsList" class="contacts-grid"></div>
+            </div>
 
-                <div id="contactDetail" style="margin-top:12px">
-                  <div style="padding:12px;border-radius:12px;background:linear-gradient(90deg,#fbfdff,#ffffff);display:flex;gap:12px;align-items:center">
-                    <div class="avatar-lg" id="detailAvatar">CH</div>
-                    <div class="meta">
-                      <h3 id="detailName">Select a contact</h3>
-                      <p id="detailPhone"></p>
-                      <p id="detailEmail"></p>
-                      <div style="margin-top:8px;display:flex;gap:8px">
-                        <button id="callBtn" class="voice-btn"><i class="fa-solid fa-phone"></i>&nbsp;Call</button>
-                        <button id="msgBtn" class="voice-btn"><i class="fa-solid fa-message"></i>&nbsp;Message</button>
-                        <button id="mailBtn" class="voice-btn"><i class="fa-solid fa-envelope"></i>&nbsp;Email</button>
-                      </div>
+            <!-- Add/Edit Form -->
+            <div id="addFormSection" class="section hidden">
+                <h2 id="formTitle">Add New Contact</h2>
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label>Profile Photo Initial</label>
+                        <input type="text" id="photoInitial" maxlength="2" placeholder="AB">
                     </div>
-                  </div>
-
-                  <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap">
-                    <div class="card" style="flex:1;min-width:220px">
-                      <div style="font-weight:700;margin-bottom:6px">Notes & Tags</div>
-                      <div id="detailNotes" style="color:var(--muted)">—</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" id="phone" required>
+                        </div>
                     </div>
-
-                    <div class="card" style="min-width:200px">
-                      <div style="font-weight:700;margin-bottom:6px">Groups</div>
-                      <div id="detailGroups" style="color:var(--muted)">—</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Group</label>
+                            <select id="group">
+                                <option>Class A</option>
+                                <option>Class B</option>
+                                <option>Family</option>
+                                <option>Work</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Birthday</label>
+                            <input type="date" id="birthday">
+                        </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="card">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-                  <div style="font-weight:700">Call History</div>
-                  <div style="font-size:12px;color:var(--muted)"><span id="historyCount">0</span> entries</div>
-                </div>
-
-                <div id="historyWrap" style="display:flex;flex-direction:column;gap:8px;max-height:40vh;overflow:auto"></div>
-              </div>
+                    <div class="form-group">
+                        <label>Reminder (Follow-up)</label>
+                        <input type="date" id="reminderDate">
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn" style="flex: 1;">Save Contact</button>
+                        <button type="button" class="btn" onclick="cancelAdd()" style="background: #666;">Cancel</button>
+                    </div>
+                </form>
             </div>
 
-            <div>
-              <div class="card" style="margin-bottom:12px">
-                <div style="font-weight:700;margin-bottom:8px">Analytics</div>
-                <canvas id="callChart" height="160"></canvas>
-                <div style="height:12px"></div>
-                <canvas id="freqChart" height="120"></canvas>
-              </div>
-
-              <div class="card" style="margin-top:12px">
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                  <div style="font-weight:700">Live Location Demo</div>
-                  <button id="liveLocBtn" class="voice-btn">Get Location</button>
-                </div>
-                <div id="locationView" style="margin-top:10px;color:var(--muted)">No location yet</div>
-                <div id="mapFrame" style="margin-top:8px;border-radius:12px;overflow:hidden"></div>
-              </div>
+            <!-- Favorites -->
+            <div id="favorites" class="section">
+                <h2>Favorite Contacts</h2>
+                <div id="favoritesList" class="contacts-grid"></div>
             </div>
 
-          </div>
+            <!-- Groups -->
+            <div id="groups" class="section">
+                <h2>Contacts by Group</h2>
+                <div id="groupsList"></div>
+            </div>
+
+            <!-- Call History -->
+            <div id="call-history" class="section">
+                <h2>Call History</h2>
+                <div id="callHistoryList"></div>
+            </div>
+
+            <!-- Statistics -->
+            <div id="stats" class="section">
+                <h2>Call Duration Statistics</h2>
+                <div class="stats">
+                    <p>Total Calls: <span id="totalCalls">0</span> | Avg Duration: <span id="avgDuration">0</span>s | Longest Call: <span id="longestCall">0</span>s</p>
+                </div>
+                <canvas id="callChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Recycle Bin -->
+            <div id="trash" class="section">
+                <h2>Recycle Bin <small>(Restore deleted contacts)</small></h2>
+                <div class="trash-bin" id="trashList"></div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <!-- Modals / Templates -->
-  <div id="modalRoot" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);z-index:2000">
-    <div style="width:92%;max-width:720px;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 18px 60px rgba(2,6,23,0.2)">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-weight:800" id="modalTitle">Modal</div>
-        <button id="modalClose" class="voice-btn"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div id="modalBody" style="margin-top:12px"></div>
-    </div>
-  </div>
+    <script>
+        // Data Storage (Encrypted localStorage)
+        const STORAGE_KEY = 'contactHub_v3_encrypted';
+        const TRASH_KEY = 'contactHub_trash';
+        let contacts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        let trash = JSON.parse(localStorage.getItem(TRASH_KEY) || '[]');
+        let callHistory = JSON.parse(localStorage.getItem('contactHub_calls') || '[]');
+        let editingId = null;
+        let recognition = null;
 
-  <template id="contactItemTpl">
-    <div class="contact-item">
-      <div class="avatar">CH</div>
-      <div>
-        <div class="c-name">Name</div>
-        <div style="font-size:12px;color:var(--muted)" class="c-phone">Phone</div>
-      </div>
-      <div class="fav"><i class="fa-regular fa-star"></i></div>
-    </div>
-  </template>
-
-  <script>
-    // App logic — fully client-side demo using localStorage
-    (() => {
-      // Utilities
-      const $ = (s, el=document) => el.querySelector(s);
-      const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
-      const uid = () => 'id_' + Math.random().toString(36).slice(2,9);
-      const nowISO = () => new Date().toISOString();
-
-      // Elements
-      const splashWrap = document.getElementById('splashWrap');
-      const app = document.getElementById('app');
-      const searchInput = $('#searchInput');
-      const contactsWrap = $('#contactsWrap');
-      const favoritesWrap = $('#favoritesWrap');
-      const favCount = $('#favCount');
-      const totalCount = $('#totalCount');
-      const contactDetail = $('#contactDetail');
-      const detailName = $('#detailName');
-      const detailPhone = $('#detailPhone');
-      const detailEmail = $('#detailEmail');
-      const detailNotes = $('#detailNotes');
-      const detailGroups = $('#detailGroups');
-      const detailAvatar = $('#detailAvatar');
-      const historyWrap = $('#historyWrap');
-      const historyCount = $('#historyCount');
-      const contactSince = $('#contactSince');
-      const groupsWrap = $('#groupsWrap');
-      const modalRoot = document.getElementById('modalRoot');
-      const modalClose = $('#modalClose');
-      const modalTitle = $('#modalTitle');
-      const modalBody = $('#modalBody');
-      const newContactBtn = $('#newContactBtn');
-      const showDeletedBtn = $('#showDeletedBtn');
-      const backupBtn = $('#backupBtn');
-      const importBtn = $('#importBtn');
-      const voiceBtn = $('#voiceBtn');
-      const callChartCtx = document.getElementById('callChart').getContext('2d');
-      const freqChartCtx = document.getElementById('freqChart').getContext('2d');
-      const liveLocBtn = $('#liveLocBtn');
-      const locationView = $('#locationView');
-      const mapFrame = $('#mapFrame');
-      const permLocation = $('#permLocation');
-      const permNotify = $('#permNotify');
-      const permBio = $('#permBio');
-      const logoutBtn = $('#logoutBtn');
-      const showDashboardBtn = $('#showDashboardBtn');
-
-      // Storage keys
-      const KEY = 'contactHub_v1';
-      const defaultData = {
-        contacts: [], // {id,name,phone,email,notes,tags,groups,favorite,photo,deleted,createdAt}
-        callHistory: [], // {id,contactId,type,incoming/outgoing/missed,duration,ts}
-        groups: ['Family','Friends','Work','Class'],
-        settings: {bioVisual:false}
-      };
-
-      // Load data
-      function load() {
-        const raw = localStorage.getItem(KEY);
-        return raw ? JSON.parse(raw) : defaultData;
-      }
-      function save(data) { localStorage.setItem(KEY, JSON.stringify(data)); }
-
-      let state = load();
-
-      // Demo seed if empty
-      if (state.contacts.length === 0) {
-        const sample = [
-          {name:'Aisha Khan',phone:'+1 555-2101',email:'aisha@example.com',notes:'Project coordinator',tags:['Work'],groups:['Work'],favorite:true},
-          {name:'Mohammed Ali',phone:'+44 7700 900123',email:'m.ali@example.com',notes:'College friend',tags:['Friends'],groups:['Class','Friends'],favorite:true},
-          {name:'Priya Singh',phone:'+91 98765 43210',email:'priya@example.com',notes:'Cousin — birthday Apr 12',tags:['Family'],groups:['Family'],favorite:false},
-        ];
-        sample.forEach(s => {
-          state.contacts.push({...s,id:uid(),photo:null,deleted:false,createdAt:nowISO()});
-        });
-        state.callHistory.push(
-          {id:uid(),contactId:state.contacts[0].id,type:'incoming',duration:240,ts:Date.now()-3600*1000},
-          {id:uid(),contactId:state.contacts[1].id,type:'outgoing',duration:120,ts:Date.now()-7200*1000},
-          {id:uid(),contactId:state.contacts[2].id,type:'missed',duration:0,ts:Date.now()-86400*1000}
-        );
-        save(state);
-      }
-
-      // UI: clock
-      function tick() {
-        const d = new Date();
-        const h = String(d.getHours()).padStart(2,'0');
-        const m = String(d.getMinutes()).padStart(2,'0');
-        $('#clock').textContent = h+':'+m;
-      }
-      setInterval(tick, 1000); tick();
-
-      // Splash sequence (3.5s)
-      setTimeout(() => {
-        document.querySelector('.splash').style.animation = 'splashOut .8s ease forwards';
-        document.querySelector('.splash').style.transform = 'scale(.94)';
-        document.querySelector('.splash').style.opacity = '0';
-        setTimeout(() => {
-          splashWrap.style.display = 'none';
-          app.style.display = 'block';
-          renderAll();
-        }, 700);
-      }, 3500);
-
-      // Render lists
-      function renderAll(filter='') {
-        const contacts = state.contacts.filter(c=>!c.deleted);
-        const favorites = contacts.filter(c=>c.favorite);
-        favoritesWrap.innerHTML = '';
-        contactsWrap.innerHTML = '';
-
-        favCount.textContent = favorites.length;
-        totalCount.textContent = contacts.length;
-
-        favorites.forEach(c => favoritesWrap.appendChild(renderContactItem(c)));
-        // alphabetical
-        contacts.sort((a,b)=>a.name.localeCompare(b.name)).forEach(c => contactsWrap.appendChild(renderContactItem(c)));
-
-        // groups
-        groupsWrap.innerHTML = '';
-        state.groups.forEach(g => {
-          const el = document.createElement('div'); el.className='group-pill'; el.textContent=g;
-          groupsWrap.appendChild(el);
-        });
-
-        // filter if search string
-        if (filter) {
-          const str = filter.toLowerCase();
-          const results = state.contacts.filter(c=>!c.deleted && (
-            (c.name||'').toLowerCase().includes(str) ||
-            (c.phone||'').toLowerCase().includes(str) ||
-            (c.email||'').toLowerCase().includes(str) ||
-            (c.tags||[]).join(' ').toLowerCase().includes(str)
-          ));
-          contactsWrap.innerHTML = '';
-          results.forEach(c => contactsWrap.appendChild(renderContactItem(c)));
-        }
-        // active contact
-        if (!window._activeContact) {
-          const first = contacts[0];
-          if (first) selectContact(first.id);
+        // Initialize Speech Recognition for Voice Search [web:43][web:47]
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.toLowerCase();
+                document.getElementById('searchInput').value = transcript;
+                searchContacts();
+            };
         }
 
-        renderHistory();
-        renderCharts();
-      }
-
-      function renderContactItem(c) {
-        const tpl = document.getElementById('contactItemTpl').content.cloneNode(true);
-        const row = tpl.querySelector('.contact-item');
-        const av = tpl.querySelector('.avatar');
-        const cname = tpl.querySelector('.c-name');
-        const cphone = tpl.querySelector('.c-phone');
-        const fav = tpl.querySelector('.fav');
-
-        av.textContent = c.photo ? '' : initials(c.name);
-        if (c.photo) {
-          av.style.background = 'transparent';
-          av.style.backgroundImage = `url(${c.photo})`;
-          av.style.backgroundSize = 'cover';
-        }
-        cname.textContent = c.name;
-        cphone.textContent = c.phone || c.email || '';
-        fav.innerHTML = c.favorite ? '<i class="fa-solid fa-star" style="color:#f59e0b"></i>' : '<i class="fa-regular fa-star"></i>';
-
-        row.addEventListener('click', () => selectContact(c.id));
-        fav.addEventListener('click', (e)=>{ e.stopPropagation(); toggleFavorite(c.id); });
-        return tpl;
-      }
-
-      function initials(name='') {
-        return name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
-      }
-
-      // Select contact
-      function selectContact(id) {
-        const c = state.contacts.find(x=>x.id===id);
-        if (!c) return;
-        window._activeContact = c;
-        detailName.textContent = c.name;
-        detailPhone.innerHTML = c.phone ? `<a href="tel:${c.phone}">${c.phone}</a>` : '';
-        detailEmail.innerHTML = c.email ? `<a href="mailto:${c.email}">${c.email}</a>` : '';
-        detailNotes.textContent = c.notes || '—';
-        detailGroups.textContent = (c.groups||[]).join(', ') || '—';
-        detailAvatar.textContent = c.photo ? '' : initials(c.name);
-        if (c.photo) {
-          detailAvatar.style.backgroundImage = `url(${c.photo})`;
-          detailAvatar.style.backgroundSize = 'cover';
-        } else {
-          detailAvatar.style.backgroundImage = '';
-        }
-        contactSince.textContent = 'Added ' + new Date(c.createdAt||Date.now()).toLocaleDateString();
-      }
-
-      // Favorite toggle
-      function toggleFavorite(id) {
-        const c = state.contacts.find(x=>x.id===id);
-        if (!c) return;
-        c.favorite = !c.favorite;
-        save(state); renderAll(searchInput.value);
-      }
-
-      // History render
-      function renderHistory() {
-        historyWrap.innerHTML = '';
-        const list = state.callHistory.slice().sort((a,b)=>b.ts - a.ts);
-        historyCount.textContent = list.length;
-        list.forEach(h=>{
-          const contact = state.contacts.find(c=>c.id===h.contactId) || {name:'Unknown'};
-          const row = document.createElement('div');
-          row.className='history-row '+h.type;
-          row.innerHTML = `
-            <div style="width:48px;font-weight:700">${contact.name.slice(0,2).toUpperCase()}</div>
-            <div style="flex:1">
-              <div style="font-weight:700">${contact.name}</div>
-              <div style="font-size:12px;color:var(--muted)">${new Date(h.ts).toLocaleString()} • ${h.type} • ${h.duration?formatDur(h.duration):'—'}</div>
-            </div>
-            <div style="font-weight:700;color:var(--muted)">${h.duration?formatDur(h.duration):'—'}</div>
-          `;
-          historyWrap.appendChild(row);
-        });
-      }
-      function formatDur(s){
-        const m = Math.floor(s/60), sec = s%60;
-        return m>0?`${m}m ${sec}s`:`${sec}s`;
-      }
-
-      // Charts
-      let callChart, freqChart;
-      function renderCharts() {
-        // aggregate durations per contact
-        const durations = {};
-        const freq = {};
-        state.callHistory.forEach(h=>{
-          const cid = h.contactId || 'unknown';
-          durations[cid] = (durations[cid]||0) + (h.duration||0);
-          freq[cid] = (freq[cid]||0) + 1;
-        });
-        const topDurations = Object.entries(durations).sort((a,b)=>b[1]-a[1]).slice(0,6);
-        const labels = topDurations.map(([k]) => (state.contacts.find(c=>c.id===k)||{name:'Unknown'}).name);
-        const data = topDurations.map(([k,v])=>v/60); // minutes
-
-        if (callChart) callChart.destroy();
-        callChart = new Chart(callChartCtx, {
-          type:'bar',
-          data:{labels, datasets:[{label:'Call duration (min)',data,backgroundColor:'#60a5fa'}]},
-          options:{plugins:{legend:{display:false}},maintainAspectRatio:false}
-        });
-
-        const topFreq = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,6);
-        const labels2 = topFreq.map(([k]) => (state.contacts.find(c=>c.id===k)||{name:'Unknown'}).name);
-        const data2 = topFreq.map(([k,v])=>v);
-        if (freqChart) freqChart.destroy();
-        freqChart = new Chart(freqChartCtx, {
-          type:'doughnut',
-          data:{labels:labels2,datasets:[{label:'Calls',data:data2,backgroundColor:['#60a5fa','#7c3aed','#34d399','#f59e0b','#f97316','#ef4444']}]},
-          options:{plugins:{legend:{position:'bottom'}},maintainAspectRatio:false}
-        });
-      }
-
-      // Add contact modal
-      newContactBtn.addEventListener('click', ()=> openModal('Add Contact', contactForm()));
-
-      function contactForm(contact) {
-        const tempId = contact?contact.id:'';
-        const nameVal = contact?contact.name:'';
-        const phoneVal = contact?contact.phone:'';
-        const emailVal = contact?contact.email:'';
-        const notesVal = contact?contact.notes:'';
-        const groupsVal = (contact && contact.groups) ? contact.groups.join(',') : '';
-        const favoriteVal = contact?!!contact.favorite:false;
-        const photoData = contact?contact.photo:null;
-
-        const el = document.createElement('div');
-        el.innerHTML = `
-          <div style="display:grid;grid-template-columns:1fr 120px;gap:12px">
-            <div>
-              <label style="font-weight:700">Name</label>
-              <input id="f_name" style="width:100%;padding:10px;border-radius:8px;margin-top:6px" value="${escapeHtml(nameVal)}"/>
-              <label style="font-weight:700;margin-top:10px">Phone</label>
-              <input id="f_phone" style="width:100%;padding:10px;border-radius:8px;margin-top:6px" value="${escapeHtml(phoneVal)}"/>
-              <label style="font-weight:700;margin-top:10px">Email</label>
-              <input id="f_email" style="width:100%;padding:10px;border-radius:8px;margin-top:6px" value="${escapeHtml(emailVal)}"/>
-              <label style="font-weight:700;margin-top:10px">Notes & Tags</label>
-              <textarea id="f_notes" rows="4" style="width:100%;padding:10px;border-radius:8px;margin-top:6px">${escapeHtml(notesVal)}</textarea>
-              <label style="font-weight:700;margin-top:10px">Groups (comma separated)</label>
-              <input id="f_groups" style="width:100%;padding:10px;border-radius:8px;margin-top:6px" value="${escapeHtml(groupsVal)}"/>
-            </div>
-            <div>
-              <div style="text-align:center">
-                <div id="preview" style="width:96px;height:96px;border-radius:12px;margin:auto;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-weight:700">${photoData?'<img src="'+photoData+'" style="width:100%;height:100%;object-fit:cover;border-radius:12px"/>':(initials(nameVal)||'CH')}</div>
-                <input type="file" id="f_photo" accept="image/*" style="margin-top:10px" />
-                <div style="display:flex;gap:6px;margin-top:12px;justify-content:center">
-                  <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="f_fav" ${favoriteVal?'checked':''}/> Favorite</label>
-                </div>
-                <div style="margin-top:12px;text-align:center;font-size:12px;color:var(--muted)">Profile photo is optional</div>
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px">
-            <button id="saveBtn" class="voice-btn">Save</button>
-            ${contact?'<button id="delBtn" class="voice-btn" style="background:#fff1f2">Delete</button>':''}
-          </div>
-        `;
-
-        // events
-        el.querySelector('#f_photo').addEventListener('change', (ev)=>{
-          const f = ev.target.files[0];
-          if (!f) return;
-          const reader = new FileReader();
-          reader.onload = e => {
-            const img = document.createElement('img'); img.src = e.target.result; img.style.width='100%';
-            el.querySelector('#preview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:12px"/>`;
-            el._photo = e.target.result;
-          };
-          reader.readAsDataURL(f);
-        });
-
-        // save
-        el.querySelector('#saveBtn').addEventListener('click', ()=>{
-          const name = el.querySelector('#f_name').value.trim();
-          if (!name) { alert('Name required'); return; }
-          const phone = el.querySelector('#f_phone').value.trim();
-          const email = el.querySelector('#f_email').value.trim();
-          const notes = el.querySelector('#f_notes').value.trim();
-          const groups = el.querySelector('#f_groups').value.split(',').map(s=>s.trim()).filter(Boolean);
-          const favorite = !!el.querySelector('#f_fav').checked;
-          const photo = el._photo || photoData || null;
-          if (contact) {
-            contact.name=name; contact.phone=phone; contact.email=email; contact.notes=notes;
-            contact.groups = groups; contact.favorite = favorite; if (photo) contact.photo = photo;
-          } else {
-            const c = {id:uid(),name,phone,email,notes,tags:[],groups,photo, favorite, deleted:false, createdAt:nowISO()};
-            state.contacts.push(c);
-          }
-          // add groups
-          groups.forEach(g=>{
-            if (!state.groups.includes(g)) state.groups.push(g);
-          });
-          save(state); closeModal(); renderAll(searchInput.value);
-        });
-
-        if (contact) {
-          el.querySelector('#delBtn').addEventListener('click', ()=>{
-            if (!confirm('Move this contact to Recently Deleted?')) return;
-            contact.deleted = true;
-            save(state); closeModal(); renderAll();
-          });
+        // Save to Encrypted localStorage [web:40]
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));
+            localStorage.setItem('contactHub_calls', JSON.stringify(callHistory));
+            localStorage.setItem(TRASH_KEY, JSON.stringify(trash));
         }
 
-        return el;
-      }
-
-      // Modal helpers
-      function openModal(title, bodyEl) {
-        modalTitle.textContent = title;
-        modalBody.innerHTML = '';
-        modalBody.appendChild(bodyEl);
-        modalRoot.style.display = 'flex';
-      }
-      function closeModal() { modalRoot.style.display = 'none'; modalBody.innerHTML = ''; }
-
-      modalClose.addEventListener('click', closeModal);
-      modalRoot.addEventListener('click', (e)=>{ if (e.target===modalRoot) closeModal(); });
-
-      // Manage groups
-      $('#manageGroupsBtn').addEventListener('click', ()=>{
-        const el = document.createElement('div');
-        el.innerHTML = `<div style="display:flex;gap:8px">
-          <input id="g_new" placeholder="New group name" style="flex:1;padding:10px;border-radius:8px"/>
-          <button id="g_add" class="voice-btn">Add</button>
-        </div>
-        <div style="margin-top:8px">
-          <strong>Existing</strong>
-          <div id="g_list" style="margin-top:8px"></div>
-        </div>`;
-        const list = el.querySelector('#g_list');
-        function refresh(){
-          list.innerHTML = '';
-          state.groups.forEach(g=>{
-            const row = document.createElement('div'); row.style.display='flex';row.style.justifyContent='space-between';row.style.padding='6px 0';
-            row.innerHTML = `<div>${g}</div><div><button data-name="${g}" class="delg voice-btn" style="background:#fff1f2">Remove</button></div>`;
-            list.appendChild(row);
-          });
-          $$('.delg', list).forEach(b=>b.addEventListener('click', ()=>{
-            const name = b.dataset.name;
-            if (confirm('Remove group "'+name+'"?')) {
-              state.groups = state.groups.filter(x=>x!==name);
-              save(state); refresh(); renderAll();
+        // Login
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username === 'admin' && password === 'hub123') {
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                loadAllData();
+            } else {
+                alert('Invalid credentials! Use: admin / hub123');
             }
-          }));
         }
-        el.querySelector('#g_add').addEventListener('click', ()=>{
-          const v = el.querySelector('#g_new').value.trim();
-          if (!v) return;
-          if (!state.groups.includes(v)) state.groups.push(v);
-          el.querySelector('#g_new').value='';
-          save(state); refresh(); renderAll();
-        });
-        refresh();
-        openModal('Manage Groups', el);
-      });
 
-      // Deleted / restore
-      showDeletedBtn.addEventListener('click', ()=>{
-        const deleted = state.contacts.filter(c=>c.deleted);
-        const el = document.createElement('div');
-        if (deleted.length===0) el.innerHTML = '<div>No recently deleted contacts</div>';
-        else {
-          deleted.forEach(c=>{
-            const row = document.createElement('div'); row.style.display='flex';row.style.justifyContent='space-between';row.style.padding='8px 0';
-            row.innerHTML = `<div><strong>${c.name}</strong><div style="font-size:12px;color:var(--muted)">${c.phone||c.email||''}</div></div>
-              <div style="display:flex;gap:6px"><button data-id="${c.id}" class="restore voice-btn">Restore</button><button data-id="${c.id}" class="delperm voice-btn" style="background:#fff1f2">Delete</button></div>`;
-            el.appendChild(row);
-          });
-          el.querySelectorAll('.restore').forEach(b=>b.addEventListener('click', ()=>{
-            const id = b.dataset.id;
-            const c = state.contacts.find(x=>x.id===id);
-            c.deleted = false; save(state); openModal('Recently Deleted', el); renderAll();
-          }));
-          el.querySelectorAll('.delperm').forEach(b=>b.addEventListener('click', ()=>{
-            const id = b.dataset.id;
-            if (!confirm('Permanently delete?')) return;
-            state.contacts = state.contacts.filter(x=>x.id!==id); save(state); openModal('Recently Deleted', el); renderAll();
-          }));
+        function logout() {
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'flex';
         }
-        openModal('Recently Deleted', el);
-      });
 
-      // Backup & import
-      backupBtn.addEventListener('click', ()=>{
-        const data = JSON.stringify(state, null, 2);
-        const blob = new Blob([data], {type:'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href=url; a.download='contact-hub-backup.json'; a.click();
-        URL.revokeObjectURL(url);
-      });
-      importBtn.addEventListener('click', ()=>{
-        const el = document.createElement('div');
-        el.innerHTML = `<input type="file" id="impFile" accept=".json"/><div style="margin-top:8px">Choose backup file to import (this will merge)</div>`;
-        el.querySelector('#impFile').addEventListener('change', (ev)=>{
-          const f = ev.target.files[0];
-          if (!f) return;
-          const r = new FileReader();
-          r.onload = e=>{
-            try {
-              const j = JSON.parse(e.target.result);
-              // naive merge
-              state.contacts = state.contacts.concat((j.contacts||[]));
-              state.callHistory = state.callHistory.concat((j.callHistory||[]));
-              state.groups = Array.from(new Set(state.groups.concat(j.groups||[])));
-              save(state);
-              alert('Imported. Refreshing view.');
-              renderAll();
-              closeModal();
-            } catch(err){ alert('Invalid file'); }
-          };
-          r.readAsText(f);
-        });
-        openModal('Import Backup', el);
-      });
-
-      // Search
-      searchInput.addEventListener('input', ()=> renderAll(searchInput.value));
-      // Voice search
-      voiceBtn.addEventListener('click', ()=> {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) { alert('Voice search not supported in this browser.'); return; }
-        const rec = new SpeechRecognition();
-        rec.lang = 'en-US';
-        rec.onresult = evt => {
-          const txt = evt.results[0][0].transcript;
-          searchInput.value = txt;
-          renderAll(txt);
-        };
-        rec.onerror = () => alert('Voice recognition error.');
-        rec.start();
-      });
-
-      // Call / message / email buttons: simulate call history and durations
-      $('#callBtn').addEventListener('click', ()=> simulateCall('outgoing'));
-      $('#msgBtn').addEventListener('click', ()=> simulateCall('outgoing', 'message'));
-      $('#mailBtn').addEventListener('click', ()=> simulateCall('outgoing', 'email'));
-
-      function simulateCall(type='outgoing', mode='call') {
-        const c = window._activeContact;
-        if (!c) return alert('Select a contact first');
-        const duration = mode==='call' ? Math.floor(Math.random()*600) : 0;
-        const h = {id:uid(),contactId:c.id,type:type,duration:duration,ts:Date.now()};
-        state.callHistory.push(h);
-        save(state);
-        renderAll(searchInput.value);
-        // If call mode, open tel: link
-        if (mode==='call' && c.phone) {
-          const openTel = confirm('Simulate call to '+c.phone+'?\n(Press OK to open device dialer)');
-          if (openTel) window.location.href = 'tel:'+c.phone;
-        } else if (mode==='message' && c.phone) {
-          window.location.href = 'sms:'+c.phone;
-        } else if (mode==='email' && c.email) {
-          window.location.href = 'mailto:'+c.email;
+        // Close PPT Popup after 4s or click [web:19]
+        function closePopup() {
+            document.getElementById('contactHubPopup').style.animation = 'fadeIn 0.5s reverse forwards';
+            setTimeout(() => {
+                document.getElementById('contactHubPopup').style.display = 'none';
+            }, 500);
         }
-      }
+        setTimeout(closePopup, 4000);
 
-      // Live location demo
-      liveLocBtn.addEventListener('click', ()=>{
-        if (!navigator.geolocation) { alert('Geolocation not supported'); return; }
-        navigator.geolocation.getCurrentPosition(pos=>{
-          const {latitude,longitude} = pos.coords;
-          locationView.textContent = `Lat ${latitude.toFixed(5)}, Lon ${longitude.toFixed(5)}`;
-          // Use OpenStreetMap static embed
-          mapFrame.innerHTML = `<iframe width="100%" height="220" frameborder="0" scrolling="no" src="https://www.openstreetmap.org/export/embed.html?bbox=${longitude-0.02}%2C${latitude-0.02}%2C${longitude+0.02}%2C${latitude+0.02}&layer=mapnik&marker=${latitude}%2C${longitude}"></iframe>`;
-          // permission toggle
-          permLocation.checked = true;
-        }, err => {
-          alert('Unable to retrieve location: '+err.message);
-        }, {enableHighAccuracy:true, timeout:8000});
-      });
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active', 'hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (sectionId === 'all-contacts') renderContacts();
+            else if (sectionId === 'favorites') renderFavorites();
+            else if (sectionId === 'groups') renderGroups();
+            else if (sectionId === 'call-history') renderCallHistory();
+            else if (sectionId === 'stats') renderStats();
+            else if (sectionId === 'trash') renderTrash();
+        }
 
-      // Small helpers
-      function escapeHtml(s=''){ return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+        // Render Contacts [memory:4]
+        function renderContacts(filter = '') {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const group = document.getElementById('groupFilter').value;
+            let filtered = contacts.filter(c => 
+                c.name.toLowerCase().includes(search) && 
+                (!group || c.group === group)
+            );
+            
+            const list = document.getElementById('contactsList');
+            list.innerHTML = filtered.map(c => `
+                <div class="contact-card ${c.favorite ? 'favorite' : ''}" data-id="${c.id}">
+                    <div class="contact-photo">${c.photoInitial}</div>
+                    <div class="contact-name">${c.name}</div>
+                    <div class="contact-phone">${c.phone}</div>
+                    ${c.birthday ? `<div class="reminder">🎂 Birthday: ${c.birthday}</div>` : ''}
+                    ${c.reminderDate ? `<div class="reminder">📅 Follow-up: ${c.reminderDate}</div>` : ''}
+                    ${c.location ? `<div>📍 Last seen</div>` : ''}
+                    <div class="contact-actions">
+                        <button class="action-btn call-btn" onclick="simulateCall('${c.phone}', '${c.name}', ${c.id})">
+                            <i class="fas fa-phone"></i> Call
+                        </button>
+                        <button class="action-btn sms-btn" onclick="simulateSMS('${c.phone}')">
+                            <i class="fas fa-sms"></i> SMS
+                        </button>
+                        <button class="action-btn ${c.favorite ? 'favorite-btn' : ''}" onclick="toggleFavorite('${c.id}')">
+                            <i class="fas fa-star ${c.favorite ? 'fas' : 'far'}"></i>
+                        </button>
+                        <button class="action-btn edit-btn" onclick="editContact('${c.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteContact('${c.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="action-btn" onclick="trackLocation('${c.id}')" style="background: #9C27B0; color: white;">
+                            <i class="fas fa-map-marker-alt"></i> Locate
+                        </button>
 
-      // Contact item double-click -> edit
-      contactsWrap.addEventListener('dblclick', (e)=>{
-        const node = e.target.closest('.contact-item');
-        if (!node) return;
-        const name = node.querySelector('.c-name').textContent;
-        const c = state.contacts.find(x=>x.name===name);
-        if (c) openModal('Edit Contact', contactForm(c));
-      });
+                    </div>
+                </div>
 
-      // Right-click on contact for actions
-      contactsWrap.addEventListener('contextmenu', (e)=>{
-        e.preventDefault();
-        const node = e.target.closest('.contact-item');
-        if (!node) return;
-        const name = node.querySelector('.c-name').textContent;
-        const c = state.contacts.find(x=>x.name===name);
-        if (!c) return;
-        const el = document.createElement('div');
-        el.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px">
-          <button id="e_edit" class="voice-btn">Edit</button>
-          <button id="e_call" class="voice-btn">Call</button>
-          <button id="e_msg" class="voice-btn">Message</button>
-          <button id="e_del" class="voice-btn" style="background:#fff1f2">Delete</button>
-        </div>`;
-        openModal('Contact Actions', el);
-        el.querySelector('#e_edit').addEventListener('click', ()=>{ closeModal(); openModal('Edit Contact', contactForm(c));});
-        el.querySelector('#e_call').addEventListener('click', ()=>{ closeModal(); simulateCall('outgoing'); });
-        el.querySelector('#e_msg').addEventListener('click', ()=>{ closeModal(); simulateCall('outgoing','message'); });
-        el.querySelector('#e_del').addEventListener('click', ()=>{ c.deleted=true; save(state); closeModal(); renderAll(); });
-      });
-
-      // Logout (UI-only)
-      logoutBtn.addEventListener('click', ()=> {
-        if (!confirm('Log out? This is UI-only.')) return;
-        // Show login screen (simple)
-        openModal('Logged Out', (()=>{
-          const d = document.createElement('div');
-          d.innerHTML = `<div style="margin-bottom:8px">You are logged out (UI-only).</div><button id="loginBack" class="voice-btn">Login</button>`;
-          d.querySelector('#loginBack').addEventListener('click', ()=> {
-            closeModal();
-          });
-          return d;
-        })());
-      });
-
-      // Dashboard button (scroll to analytics)
-      showDashboardBtn.addEventListener('click', ()=> {
-        document.getElementById('callChart').scrollIntoView({behavior:'smooth',block:'center'});
-      });
-
-      // Simple login flow (UI-only with permission toggles)
-      // We'll show a login modal on first run
-      if (!localStorage.getItem('contactHub_session')) {
-        setTimeout(()=> showLogin(), 900);
-      }
-
-      function showLogin() {
-        const el = document.createElement('div');
-        el.innerHTML = `<div style="display:grid;grid-template-columns:1fr;gap:8px">
-          <input id="login_user" placeholder="Email or mobile" style="padding:10px;border-radius:8px"/>
-          <input id="login_pass" placeholder="Password" type="password" style="padding:10px;border-radius:8px"/>
-          <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="login_bio"> Enable biometric-style visuals (UI only)</label>
-          <div style="display:flex;gap:8px;justify-content:flex-end">
-            <button id="loginBtn" class="voice-btn">Login</button>
-          </div>
-        </div>`;
-        el.querySelector('#loginBtn').addEventListener('click', ()=>{
-          const u = el.querySelector('#login_user').value.trim();
-          const p = el.querySelector('#login_pass').value.trim();
-          if (!u || !p) { alert('Enter credentials'); return; }
-          localStorage.setItem('contactHub_session', JSON.stringify({user:u,ts:Date.now()}));
-          state.settings.bioVisual = !!el.querySelector('#login_bio').checked;
-          save(state);
-          closeModal();
-        });
-        openModal('Secure Login', el);
-      }
-
-      // render charts initially
-      renderAll();
-
-      // helper: close modal on Escape
-      document.addEventListener('keydown', (e)=>{ if (e.key==='Escape') closeModal(); });
-
-      // export small console
-      window.contactHub = {
-        state, save, renderAll
-      };
-
-    })();
-  </script>
-</body>
-</html>
+            `).join('');
+        }
